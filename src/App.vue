@@ -1,18 +1,23 @@
 <script setup>
-import {connectMqtt} from "@/util/mqttUtil.js";
+import { onMounted, onUnmounted } from 'vue'
+import { connectMqtt, subscribeTopic, disconnectMqtt } from "@/util/mqttUtil.js"
 
-let wssClient = null;
+onMounted(() => {
+  const wssClient = connectMqtt()
 
-//   发起wss链接
-wssClient = connectMqtt()
-wssClient.on('connect', () => {
-  console.log('MQTT 已连接')
-  // 订阅主题
-  wssClient.subscribe('test/topic', (err) => {
-    if (!err) {
-      console.log('订阅成功')
-    }
+  wssClient.on('connect', () => {
+    console.log('✅ MQTT 全局已连接')
+    // 订阅你的抓包数据主题
+    subscribeTopic('proxy/captures')
   })
+
+  wssClient.on('error', (err) => {
+    console.error('❌ MQTT 连接失败:', err)
+  })
+})
+
+onUnmounted(() => {
+  disconnectMqtt()
 })
 </script>
 
